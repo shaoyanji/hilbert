@@ -2,6 +2,7 @@
   "name": "hilbert-stream",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "description": "Progressive image delivery where the order of the bytes is the API: hierarchical Hilbert stream, client-driven ROI, static-hostable",
   "scripts": {

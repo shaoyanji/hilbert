@@ -7,7 +7,7 @@ complete blurry picture from the first **263 bytes**, then refinement, then a
 client-chosen region at full detail — with no second request format, no server
 session state, and no native codec.
 
-**[Live demo →](https://shaoyanji.github.io/hilbert/)** · [Protocol](protocol.md) · [Report](REPORT.md) · [Novelty](NOVELTY.md) · [Next steps](NEXT_STEPS.md)
+**[Live demo →](https://shaoyanji.github.io/hilbert/)** · [Protocol](protocol.md) · [Report](REPORT.md) · [Novelty](NOVELTY.md) · [Next steps](NEXT_STEPS.md) · MIT licensed
 
 ![the demo](docs/preview.jpg)
 
@@ -137,5 +137,8 @@ node bench/quality.js panorama 75 # the table above
 ## Status
 
 A feasibility prototype, ~2,500 lines, written and benchmarked in one sitting. It
-is not a codec proposal and there is no standards path. No license file yet —
-add one before reusing any of this.
+is not a codec proposal and there is no standards path.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
