@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Hilbert stream vs progressive JPEG</title>
+<style>
+  :root { color-scheme: dark; --bg: #0b0e13; --panel: #141922; --line: #232b38; --fg: #e8eef7; --dim: #8b98ab; --accent: #5ad1a0; --warn: #e2a03f; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.5 ui-sans-serif, system-ui, sans-serif; }
+  header { padding: 16px 20px; border-bottom: 1px solid var(--line); display: flex; gap: 16px; align-items: baseline; flex-wrap: wrap; }
+  h1 { font-size: 16px; margin: 0; font-weight: 600; }
+  header .sub { color: var(--dim); font-size: 12px; }
+  main { padding: 16px 20px 40px; display: grid; gap: 16px; }
+  .panes { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 900px) { .panes { grid-template-columns: 1fr; } }
+  .pane { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .pane h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--dim); margin: 0; padding: 10px 12px; border-bottom: 1px solid var(--line); font-weight: 600; }
+  .canvas-wrap { position: relative; background: #05070a; }
+  canvas { display: block; width: 100%; height: auto; }
+  .overlay { position: absolute; inset: 0; pointer-events: none; }
+  .controls { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; }
+  label { display: flex; gap: 8px; align-items: center; color: var(--dim); font-size: 12px; }
+  select, input[type=range] { background: #0f141c; color: var(--fg); border: 1px solid var(--line); border-radius: 6px; padding: 4px 6px; font: inherit; }
+  button { background: #1c2634; color: var(--fg); border: 1px solid var(--line); border-radius: 6px; padding: 6px 14px; font: inherit; cursor: pointer; }
+  button:hover { border-color: var(--accent); }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+  .stat { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+  .stat .k { color: var(--dim); font-size: 11px; text-transform: uppercase; letter-spacing: .07em; }
+  .stat .v { font-size: 20px; font-variant-numeric: tabular-nums; margin-top: 2px; }
+  .stat .v small { font-size: 12px; color: var(--dim); }
+  #waterfall { display: flex; height: 46px; gap: 1px; align-items: flex-end; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 8px; overflow: hidden; }
+  #waterfall i { flex: 1 1 auto; background: #2b3purple; border-radius: 1px 1px 0 0; min-width: 1px; }
+  .legend { color: var(--dim); font-size: 12px; }
+  code { color: var(--accent); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Hierarchical Hilbert stream</h1>
+  <span class="sub">left: this prototype, parsed off a <code>ReadableStream</code> · right: progressive JPEG over the same network</span>
+</header>
+<main>
+  <div class="controls">
+    <label>image
+      <select id="img"><option value="panorama">panorama 4096×2048</option><option value="grid">thumbnail grid 1536×1024</option></select>
+    </label>
+    <label>bandwidth
+      <input id="throttle" type="range" min="0" max="8" value="0" step="1">
+      <span id="throttleLabel">unthrottled</span>
+    </label>
+    <label><input id="roiMode" type="checkbox"> ROI mode (drag on the left pane)</label>
+    <button id="restart">restart</button>
+    <span class="legend" id="status">idle</span>
+  </div>
+
+  <div class="panes">
+    <div class="pane">
+      <h2>Hilbert stream <span id="hsByteLabel"></span></h2>
+      <div class="canvas-wrap"><canvas id="hsCanvas" width="1024" height="512"></canvas></div>
+    </div>
+    <div class="pane">
+      <h2>Progressive JPEG <span id="jpgByteLabel"></span></h2>
+      <div class="canvas-wrap"><img id="jpgImg" style="display:block;width:100%" alt="progressive jpeg baseline"></div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="k">bytes to first paint</div><div class="v" id="stFirst">–</div></div>
+    <div class="stat"><div class="k">time to first paint</div><div class="v" id="stFirstMs">–</div></div>
+    <div class="stat"><div class="k">chunks applied</div><div class="v" id="stChunks">–</div></div>
+    <div class="stat"><div class="k">level / tiles</div><div class="v" id="stLevel">–</div></div>
+    <div class="stat"><div class="k">decode + paint</div><div class="v" id="stDecode">–</div></div>
+    <div class="stat"><div class="k">total bytes</div><div class="v" id="stTotal">–</div></div>
+  </div>
+
+  <div id="waterfall" title="one bar per chunk, height = bytes"></div>
+  <div class="legend">waterfall: chunk arrival in the order the server sent them; ROI chunks are the bright ones.</div>
+</main>
+<script type="module" src="./client.js"></script>
+</body>
+</html>

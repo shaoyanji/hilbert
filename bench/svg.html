@@ -1,0 +1,44 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>svg vs raster</title></head>
+<body style="background:#0b0e13;color:#e8eef7;font:14px system-ui;padding:20px">
+<h1 style="font-size:15px">SVG blob vs same-size raster</h1>
+<pre id="log">measuring…</pre>
+<script type="module">
+const out = document.getElementById('log');
+const log = (s) => { out.textContent += `\n${s}`; };
+
+async function measure(url) {
+  const t0 = performance.now();
+  const img = new Image();
+  img.src = url;
+  await img.decode();
+  const t1 = performance.now();
+  const c = document.createElement('canvas');
+  c.width = 1600; c.height = 1200;
+  const ctx = c.getContext('2d');
+  ctx.drawImage(img, 0, 0, 1600, 1200);
+  const t2 = performance.now();
+  // force the paint to actually happen
+  ctx.getImageData(0, 0, 1, 1);
+  const t3 = performance.now();
+  let bytes = null;
+  try { bytes = (await (await fetch(url)).blob()).size; } catch {}
+  return { url, bytes, decodeMs: +(t1 - t0).toFixed(1), drawMs: +(t2 - t1).toFixed(1), flushMs: +(t3 - t2).toFixed(1) };
+}
+
+const results = [];
+for (const f of ['blob.svg', 'blob-raster.png']) {
+  try {
+    const r = await measure(`/api/baseline?f=${f}`);
+    results.push(r);
+    log(`${f.padEnd(18)} bytes=${String(r.bytes).padStart(8)} decode=${String(r.decodeMs).padStart(7)}ms draw=${String(r.drawMs).padStart(6)}ms flush=${String(r.flushMs).padStart(6)}ms`);
+  } catch (err) {
+    log(`${f}: ${err.message}`);
+  }
+}
+const heap = performance.memory ? performance.memory.usedJSHeapSize : null;
+log(`heap used: ${heap}`);
+navigator.sendBeacon('/api/report', JSON.stringify({ kind: 'svg-vs-raster', results, heap, userAgent: navigator.userAgent }));
+log('reported');
+</script>
+</body></html>

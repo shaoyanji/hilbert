@@ -1,0 +1,19 @@
+{
+  "name": "hilbert-stream",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Progressive image delivery where the order of the bytes is the API: hierarchical Hilbert stream, client-driven ROI, static-hostable",
+  "scripts": {
+    "gen": "node bench/gen.js",
+    "encode": "node encoder/encode.js out/panorama.png 75",
+    "decode": "node decoder/decode-to-png.js docs/streams/panorama.hs",
+    "selftest": "node test/selftest.js",
+    "decode-time": "node test/decode-time.js",
+    "quality": "node bench/quality.js panorama 75",
+    "serve": "node server/server.js",
+    "serve:static": "node tools/serve-static.js 8100 docs"
+  },
+  "keywords": ["progressive-image", "hilbert-curve", "roi", "streaming", "image-codec"],
+  "engines": { "node": ">=20" }
+}
