@@ -7,7 +7,7 @@ complete blurry picture from the first **263 bytes**, then refinement, then a
 client-chosen region at full detail — with no second request format, no server
 session state, and no native codec.
 
-**[Live demo →](https://shaoyanji.github.io/hilbert/)** · [Protocol](protocol.md) · [Report](REPORT.md) · [Novelty](NOVELTY.md) · [Next steps](NEXT_STEPS.md) · MIT licensed
+**[Live demo →](https://shaoyanji.github.io/hilbert/)** · [Protocol](protocol.md) · [Report](REPORT.md) · [Novelty](NOVELTY.md) · [Next steps](NEXT_STEPS.md) · [Loom bridge](LOOM.md) · MIT licensed
 
 ![the demo](docs/preview.jpg)
 
@@ -133,6 +133,20 @@ node bench/quality.js panorama 75 # the table above
 - The SVG comparison is incomplete: 348 KiB of vector art rasterises in 22 ms, so
   there is no render-performance case for a streamed raster there. Recorded as an
   incomplete result rather than a win.
+
+## Token streams as image bytes
+
+A tokenizer emits a one-dimensional stream; so does a file of image bytes. The
+curve is the same in both projects, so the two can be joined without a codec in
+between: [`tokenloom`](https://github.com/shaoyanji/tokenloom) writes a `.himg`
+— header line, then raw pixels in curve order — and `tools/loom-himg.js` renders
+it here through `lib/png.js`.
+
+The join is checked, not assumed. `test/loom-parity.js` compares the Rust
+writer's table against `lib/hilbert.js` for every cell of orders 1–7, both
+directions: **21,844 cells agree, 0 disagreements**. What crosses the boundary,
+how a byte span becomes an exact bounding box, and what the bridge does not
+claim are in **[LOOM.md](LOOM.md)**.
 
 ## Status
 
